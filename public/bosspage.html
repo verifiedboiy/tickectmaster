@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boss Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #eee;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; width: 100%; }
+    h1 { font-size: 28px; margin-bottom: 8px; color: #fff; }
+    .subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
+    
+    .user-card {
+      background: #151515;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .user-info { flex: 1; min-width: 200px; }
+    .user-name { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .user-email { font-size: 13px; color: #888; margin-bottom: 12px; }
+    .user-stats { display: flex; gap: 16px; }
+    .stat { font-size: 12px; color: #aaa; background: #222; padding: 4px 10px; border-radius: 6px; }
+    .stat b { color: #fff; }
+    
+    .coin-manager {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #000;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #222;
+    }
+    .coin-manager input[type="number"] {
+      width: 80px;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+    }
+    .coin-manager input:focus { border-color: #1C6FEB; }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-green { background: #22c55e; color: white; }
+    .btn-blue { background: #1C6FEB; color: white; }
+    .btn-red { background: #ef4444; color: white; }
+    
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Boss Dashboard</h1>
+    <p class="subtitle">Monitor all registered users, their templates, and manage coin balances.</p>
+    
+    <div id="usersList">
+      <p style="color:#666;">Loading users...</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Action successful</div>
+
+  <script>
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function loadUsers() {
+      const res = await fetch('/api/bosspage/users');
+      const users = await res.json();
+      
+      const list = document.getElementById('usersList');
+      if (users.length === 0) {
+        list.innerHTML = '<p style="color:#666;">No users registered yet.</p>';
+        return;
+      }
+      
+      list.innerHTML = users.map(u => `
+        <div class="user-card">
+          <div class="user-info">
+            <div class="user-name">${u.name} (ID: ${u.id})</div>
+            <div class="user-email">${u.email}</div>
+            <div class="user-stats">
+              <div class="stat">Coins: <b id="balance-${u.id}">${u.balance}</b></div>
+              <div class="stat">Templates: <b>${u.template_count}</b></div>
+            </div>
+          </div>
+          <div class="coin-manager">
+            <input type="number" id="input-${u.id}" value="1" min="1" max="1000">
+            <button class="btn btn-green" onclick="addCoins(${u.id})">Add</button>
+            <button class="btn btn-blue" onclick="setCoins(${u.id})">Set</button>
+            <button class="btn btn-red" onclick="deleteUser(${u.id})">Del</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function addCoins(userId) {
+      const amount = parseInt(document.getElementById(`input-${userId}`).value) || 1;
+      await fetch('/api/bosspage/add-coins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, amount })
+      });
+      showToast(`Added ${amount} coins to User ${userId}`);
+      loadUsers();
+    }
+
+    async function setCoins(userId) {
+      const amount = parseInt(document.getElementById(`input-${userId}`).value) || 0;
+      await fetch('/api/bosspage/set-coins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, amount })
+      });
+      showToast(`Set User ${userId} balance to ${amount}`);
+      loadUsers();
+    }
+
+    async function deleteUser(userId) {
+      if (!confirm(`Are you sure you want to completely delete User ${userId} and all their data?`)) return;
+      
+      await fetch(`/api/bosspage/users/${userId}`, { method: 'DELETE' });
+      showToast(`Deleted User ${userId}`);
+      loadUsers();
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
