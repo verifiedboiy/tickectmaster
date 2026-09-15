@@ -104,21 +104,24 @@ const views = {
   comingSoon: $('#viewComingSoon'),
   templateEditor: $('#viewTemplateEditor'),
   transfer: $('#viewTransfer'),
-  transferForm: $('#viewTransferForm')
+  transferForm: $('#viewTransferForm'),
+  viewTemplateSelection: $('#viewTemplateSelection'),
+  viewWalletPreview: $('#viewWalletPreview'),
+  emailProof: $('#viewEmailProof')
 };
 
 // ========== NAVIGATION ==========
 function showView(viewId) {
   // If not logged in, only allow myTickets and auth
   if (!state.currentUser && viewId !== 'myTickets' && viewId !== 'auth') {
-    Object.values(views).forEach(v => v.classList.remove('active'));
+    Object.values(views).forEach(v => v && v.classList.remove('active'));
     $('.tabs').style.display = 'none';
     $('.header').style.display = 'none';
     if(views.auth) views.auth.classList.add('active');
     return;
   }
   
-  if (viewId === 'auth') {
+  if (viewId === 'auth' || viewId === 'viewTemplateSelection' || viewId === 'viewWalletPreview' || viewId === 'emailProof') {
     $('.tabs').style.display = 'none';
     $('.header').style.display = 'none';
   } else if (state.currentUser) {
@@ -130,7 +133,7 @@ function showView(viewId) {
     $('.header').style.display = 'flex';
   }
 
-  Object.values(views).forEach(v => v.classList.remove('active'));
+  Object.values(views).forEach(v => v && v.classList.remove('active'));
   if(views[viewId]) views[viewId].classList.add('active');
 }
 
@@ -223,7 +226,7 @@ function renderTicketCard(template) {
       </div>
       <div class="card-white-section">
         <p class="card-mobile-ticket">Mobile Ticket</p>
-        <button class="card-view-ticket-btn" onclick="showComingSoon('myTickets')">
+        <button class="card-view-ticket-btn" onclick="toggleTemplateDropdown(this)">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <rect x="1" y="1" width="7" height="7" rx="0.8" stroke="white" stroke-width="1.4"/>
             <rect x="3" y="3" width="3" height="3" rx="0.5" fill="white"/>
@@ -245,6 +248,7 @@ function renderTicketCard(template) {
           </svg>
           <span>View Ticket</span>
         </button>
+        <div class="inline-template-dropdown" style="display:none"></div>
         <p class="card-ticket-details" onclick="showComingSoon('myTickets')">Ticket Details</p>
       </div>
     `;
@@ -456,6 +460,7 @@ async function loadDashboard() {
           <button class="dash-template-btn activate ${t.is_active ? 'is-active' : ''}" data-id="${t.id}">
             ${t.is_active ? 'Active' : 'Activate'}
           </button>
+          <button class="dash-template-btn proof" data-id="${t.id}">Email Proof</button>
           <button class="dash-template-btn edit" data-id="${t.id}">Edit</button>
           <button class="dash-template-btn delete" data-id="${t.id}">Del</button>
         </div>
@@ -468,6 +473,16 @@ async function loadDashboard() {
       btn.addEventListener('click', async () => {
         await api.activateTemplate(btn.dataset.id);
         await refreshAll();
+      });
+    });
+
+    list.querySelectorAll('.proof').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = state.templates.find(tpl => tpl.id == btn.dataset.id);
+        if (t) {
+          renderEmailProof(t);
+          showView('emailProof');
+        }
       });
     });
 
@@ -512,6 +527,9 @@ function openTemplateEditor(templateId) {
   $('#teRow').value = '';
   $('#teNumSeats').value = '';
   $('#teStartSeat').value = '';
+  $('#teRecipientName').value = '';
+  $('#teOrderNum').value = '';
+  $('#teBagPolicy').value = '';
   $('#teImagePreview').style.display = 'none';
   $('#teUploadText').textContent = 'Upload Image';
 
@@ -533,6 +551,9 @@ function openTemplateEditor(templateId) {
       $('#teRow').value = t.row_name || '';
       $('#teNumSeats').value = t.num_seats || '';
       $('#teStartSeat').value = t.start_seat || '';
+      $('#teRecipientName').value = t.recipient_name || '';
+      $('#teOrderNum').value = t.order_num || '';
+      $('#teBagPolicy').value = t.bag_policy || '';
       if (t.artist_image) {
         state.uploadedImagePath = t.artist_image;
         $('#teImagePreview').src = t.artist_image;
@@ -585,7 +606,10 @@ $('#btnEditorSave').addEventListener('click', async () => {
     level: $('#teLevel').value.trim() || 'Lower Level',
     num_seats: parseInt($('#teNumSeats').value) || 4,
     start_seat: parseInt($('#teStartSeat').value) || 1,
-    artist_image: state.uploadedImagePath
+    artist_image: state.uploadedImagePath,
+    recipient_name: $('#teRecipientName').value.trim(),
+    order_num: $('#teOrderNum').value.trim(),
+    bag_policy: $('#teBagPolicy').value.trim()
   };
 
   // Validate required fields
@@ -613,6 +637,56 @@ $('#btnEditorSave').addEventListener('click', async () => {
   } catch (err) {
     alert('Failed to save template');
   }
+});
+
+// ========== EMAIL PROOF RENDERING ==========
+function renderEmailProof(template) {
+  if (!template) return;
+  state.activeTemplate = template;
+
+  const recipientName = template.recipient_name || (state.currentUser?.name ? state.currentUser.name.split(' ')[0] : 'Thompson');
+  const orderNum = template.order_num || ('10-' + (template.id ? (37600 + parseInt(template.id)) : '37619') + '/CJQ');
+  const artistImg = template.artist_image || '/icon.png';
+  const eventTitle = template.event_title || 'Don Toliver: Octane Tour';
+  const eventDate = template.event_date || 'Sun, Oct 25 7:00pm';
+  const venueAddress = template.venue_address || '1 State Farm Dr, Atlanta, GA 30303, USA';
+  const venueCityPart = venueAddress.split(',').slice(1, 3).join(',').trim() || venueAddress;
+  const venueText = `${template.venue_name || 'ACCOR ARENA'} — ${venueCityPart}`;
+  const ticketCountText = `${template.num_seats || 4}X General Admission Tickets`;
+  const venueName = template.venue_name || 'ACCOR ARENA';
+
+  $('#epRecipientName').textContent = recipientName;
+  $('#epOrderNum').textContent = orderNum;
+  $('#epArtistImage').src = artistImg;
+  $('#epEventTitle').textContent = eventTitle;
+  $('#epEventDate').textContent = eventDate;
+  $('#epVenueInfo').textContent = venueText;
+  $('#epTicketCount').textContent = ticketCountText;
+
+  if (template.bag_policy) {
+    $('#epImportantText').innerHTML = template.bag_policy;
+  } else {
+    $('#epImportantText').innerHTML = `<span id="epVenueNameText">${venueName}</span> has a strict Clear Bag Policy. No bags will be allowed inside the stadium that do not meet the guideline. For more information please visit <a href="javascript:void(0)" class="ep-link">https://eventstadium.com/a-z-guide/</a> For parking information please visit <a href="javascript:void(0)" class="ep-link">https://eventstadium.com/match-day-guide/</a>`;
+  }
+
+  // SafeTix mini phone preview
+  $('#epPhoneEventTitle').textContent = eventTitle;
+  $('#epPhoneSec').textContent = template.section || '151';
+  $('#epPhoneRow').textContent = template.row_name || '15';
+  $('#epPhoneSeat').textContent = template.start_seat || '11';
+  $('#epPhoneCardDate').textContent = eventDate ? (eventDate.split('·')[0].split('-')[0].trim()) : 'Dec 15, 2026';
+
+  // "View Mobile Ticket" button in email proof
+  $('#epBtnViewMobile').onclick = async () => {
+    await api.activateTemplate(template.id);
+    await refreshAll();
+    $('#tabMyTickets').click();
+  };
+}
+
+$('#btnEmailProofBack').addEventListener('click', () => {
+  showView('addOns');
+  loadDashboard();
 });
 
 
@@ -699,5 +773,134 @@ $('#btnAuthSubmit').addEventListener('click', async () => {
     $('#btnAuthSubmit').textContent = state.isLoginMode ? 'Log In' : 'Sign Up';
   }
 });
-
 document.addEventListener('DOMContentLoaded', init);
+
+// ==========================================
+// APPLE WALLET PREVIEW LOGIC
+// ==========================================
+let allTemplatesCache = [];
+
+async function toggleTemplateDropdown(btnElement) {
+  const dropdown = btnElement.nextElementSibling;
+  if (!dropdown || !dropdown.classList.contains('inline-template-dropdown')) return;
+  
+  if (dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+    return;
+  }
+  
+  dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:#666;font-size:13px;">Loading templates...</div>';
+  dropdown.style.display = 'block';
+
+  try {
+    allTemplatesCache = await api.getTemplates();
+    
+    dropdown.innerHTML = '';
+    
+    if (allTemplatesCache.length === 0) {
+      dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:#666;font-size:13px;">No templates found. Create one first!</div>';
+    } else {
+      allTemplatesCache.forEach(t => {
+        const dateObj = new Date(t.event_date);
+        const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const item = document.createElement('div');
+        item.className = 'ts-item';
+        item.onclick = () => openWalletPreview(t.id);
+        
+        const imgStyle = t.artist_image ? `background-image:url(${t.artist_image})` : '';
+        item.innerHTML = `
+          <div class="ts-item-img" style="${imgStyle}"></div>
+          <div class="ts-item-info">
+            <div class="ts-item-title">${t.event_title || 'Untitled Event'}</div>
+            <div class="ts-item-date">${dateStr}</div>
+          </div>
+        `;
+        dropdown.appendChild(item);
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:red;font-size:13px;">Could not load templates.</div>';
+  }
+}
+
+let currentWalletTemplate = null;
+
+function openWalletPreview(templateId) {
+  currentWalletTemplate = allTemplatesCache.find(t => t.id === templateId);
+  if (!currentWalletTemplate) return;
+  
+  // Populate the fields
+  const dateObj = new Date(currentWalletTemplate.event_date);
+  
+  // Format Time: 7:30 PM
+  let hours = dateObj.getHours();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+  const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+  document.getElementById('wpTime').value = `${hours}:${minutes} ${ampm}`;
+  
+  // Format Date: TUE, June 09 2024
+  const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+  const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const year = dateObj.getFullYear();
+  document.getElementById('wpDate').value = `${weekday}, ${month} ${day} ${year}`;
+  
+  document.getElementById('wpEvent').value = currentWalletTemplate.event_title || '';
+  document.getElementById('wpVenue').value = currentWalletTemplate.venue_name || '';
+  document.getElementById('wpSection').value = currentWalletTemplate.section_name || '';
+  document.getElementById('wpRow').value = currentWalletTemplate.row_name || '';
+  document.getElementById('wpTicketType').value = 'LOWER LEVEL'; // Default or from db if exists
+  
+  const stripBg = document.getElementById('wpStripBg');
+  if (currentWalletTemplate.artist_image) {
+    stripBg.style.backgroundImage = `url(${currentWalletTemplate.artist_image})`;
+  } else {
+    stripBg.style.backgroundImage = 'none';
+  }
+  
+  showView('viewWalletPreview');
+}
+
+document.getElementById('btnWalletClose').addEventListener('click', () => {
+  showView('viewTemplateSelection');
+});
+
+// Handle Image Upload inside Preview
+document.getElementById('wpStripArea').addEventListener('click', () => {
+  document.getElementById('wpStripUpload').click();
+});
+
+document.getElementById('wpStripUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    document.getElementById('wpStripBg').style.backgroundImage = `url(${evt.target.result})`;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Handle "Add" (Generate Pass)
+document.getElementById('btnWalletAdd').addEventListener('click', () => {
+  // We will grab the values from the inputs
+  const stripBg = document.getElementById('wpStripBg').style.backgroundImage;
+  const imageUrl = stripBg ? stripBg.slice(5, -2) : '';
+  const payload = {
+    templateId: currentWalletTemplate.id,
+    time: document.getElementById('wpTime').value,
+    date: document.getElementById('wpDate').value,
+    event: document.getElementById('wpEvent').value,
+    venue: document.getElementById('wpVenue').value,
+    section: document.getElementById('wpSection').value,
+    row: document.getElementById('wpRow').value,
+    ticketType: document.getElementById('wpTicketType').value,
+    artistImage: imageUrl
+  };
+  
+  console.log('SENDING TO 3RD PARTY API:', payload);
+  alert('API is not connected yet! Data is ready to send to the generator.');
+});

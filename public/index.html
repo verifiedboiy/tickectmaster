@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/main.css?v=2">
 </head>
 <body>
 
@@ -113,7 +113,7 @@
           </div>
           <div class="card-white-section">
             <p class="card-mobile-ticket">Mobile Ticket</p>
-            <button class="card-view-ticket-btn" disabled>
+            <button class="card-view-ticket-btn" onclick="toggleTemplateDropdown(this)">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <rect x="1" y="1" width="6" height="6" rx="1" stroke="#333" stroke-width="1.5"/>
                 <rect x="11" y="1" width="6" height="6" rx="1" stroke="#333" stroke-width="1.5"/>
@@ -123,6 +123,7 @@
               </svg>
               <span>View Ticket</span>
             </button>
+            <div class="inline-template-dropdown" style="display:none"></div>
             <p class="card-ticket-details" style="pointer-events:none">Ticket Details</p>
           </div>
         </div>
@@ -368,12 +369,257 @@
             </div>
           </div>
 
+          <div class="te-section-label">Email Proof Details (Optional)</div>
+          <div class="te-field">
+            <label>Recipient Name</label>
+            <input type="text" id="teRecipientName" placeholder="Thompson">
+          </div>
+          <div class="te-field">
+            <label>Order Number</label>
+            <input type="text" id="teOrderNum" placeholder="10-37619/CJQ">
+          </div>
+          <div class="te-field">
+            <label>Important Event Info / Bag Policy</label>
+            <input type="text" id="teBagPolicy" placeholder="e.g. ACCOR ARENA has a strict Clear Bag Policy...">
+          </div>
+
           <div class="te-cost-notice">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="7" stroke="#1C6FEB" stroke-width="1.2"/>
               <text x="8" y="11.5" text-anchor="middle" fill="#1C6FEB" font-size="10" font-weight="600">i</text>
             </svg>
             <span>This action will cost 1 coin</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== EMAIL PROOF VIEW ===== -->
+    <div class="view" id="viewEmailProof">
+      <div class="email-proof-screen">
+        <!-- Top App / Client Navigation Bar -->
+        <div class="ep-nav-header">
+          <button class="ep-nav-btn ep-nav-back" id="btnEmailProofBack" title="Back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="ep-nav-actions">
+            <button class="ep-nav-icon-btn" title="Archive / Download">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                <rect x="1" y="3" width="22" height="5"></rect>
+                <line x1="10" y1="12" x2="14" y2="12"></line>
+              </svg>
+            </button>
+            <button class="ep-nav-icon-btn" title="Delete">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+            <button class="ep-nav-icon-btn" title="Mark Unread">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </button>
+            <button class="ep-nav-icon-btn" title="More Options">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#333">
+                <circle cx="12" cy="12" r="2.2"></circle>
+                <circle cx="19" cy="12" r="2.2"></circle>
+                <circle cx="5" cy="12" r="2.2"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Email Content Body -->
+        <div class="ep-content-body">
+          <!-- Ticketmaster Header -->
+          <div class="ep-tm-header">
+            <div class="ep-tm-logo">
+              <span class="ep-tm-logo-text">ticketmaster</span>
+            </div>
+            <div class="ep-tm-account">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>My Account</span>
+            </div>
+          </div>
+
+          <!-- Hero Blue Confetti Banner -->
+          <div class="ep-hero-banner">
+            <div class="ep-confetti-layer"></div>
+            <h1 class="ep-hero-title"><span id="epRecipientName">Thompson</span>, You Got the Tickets</h1>
+            <p class="ep-order-num">Order # <span id="epOrderNum">10-37619/CJQ</span></p>
+          </div>
+
+          <!-- Event Summary Card -->
+          <div class="ep-event-card">
+            <div class="ep-card-top-row">
+              <div class="ep-event-thumb-wrap">
+                <img id="epArtistImage" class="ep-event-thumb" src="/icon.png" alt="Event Image">
+              </div>
+              <div class="ep-event-info-col">
+                <h2 class="ep-event-title" id="epEventTitle">Don Toliver: Octane Tour</h2>
+                
+                <div class="ep-info-row">
+                  <svg class="ep-info-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span id="epEventDate" class="ep-info-text">Sun, Oct 25 7:00pm</span>
+                </div>
+
+                <div class="ep-info-row">
+                  <svg class="ep-info-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <div class="ep-venue-stack">
+                    <span id="epVenueInfo" class="ep-info-text">ACCOR ARENA — Paris, 75, France</span>
+                    <a href="javascript:void(0)" class="ep-directions-link" id="epGetDirections">Get Directions</a>
+                  </div>
+                </div>
+
+                <div class="ep-info-row">
+                  <svg class="ep-info-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"></path>
+                  </svg>
+                  <span id="epTicketCount" class="ep-info-text">4X General Admission Tickets</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ep-action-btn-row">
+              <button class="ep-view-mobile-btn" id="epBtnViewMobile">View Mobile Ticket</button>
+            </div>
+          </div>
+
+          <!-- Important Information Box -->
+          <div class="ep-important-section">
+            <h3 class="ep-important-heading">Important Information</h3>
+            <div class="ep-callout-box">
+              <div class="ep-callout-icon-col">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1270E4" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <div class="ep-callout-body">
+                <h4 class="ep-callout-title">Important Event Info</h4>
+                <p class="ep-callout-desc" id="epImportantText">
+                  <span id="epVenueNameText">ACCOR ARENA</span> has a strict Clear Bag Policy. No bags will be allowed inside the stadium that do not meet the guideline. For more information please visit <a href="javascript:void(0)" class="ep-link">https://eventstadium.com/a-z-guide/</a> For parking information please visit <a href="javascript:void(0)" class="ep-link">https://eventstadium.com/match-day-guide/</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ticketmaster SafeTix Section -->
+          <div class="ep-safetix-section">
+            <div class="ep-safetix-inner">
+              <div class="ep-safetix-left">
+                <div class="ep-phone-graphic">
+                  <div class="ep-phone-notch"></div>
+                  <div class="ep-phone-screen">
+                    <div class="ep-phone-tm-bar">
+                      <span style="font-weight: 500;">Done</span>
+                      <span style="font-size: 8px; color: #888;">10:30 AM</span>
+                      <span style="font-size: 9px;">•••</span>
+                    </div>
+                    <div class="ep-phone-card">
+                      <div class="ep-phone-card-hdr">
+                        <span class="ep-phone-tm-logo">ticketmaster</span>
+                        <span class="ep-phone-date" id="epPhoneCardDate">Dec 15, 2026</span>
+                      </div>
+                      <div class="ep-phone-stadium-ill">
+                        <svg width="56" height="22" viewBox="0 0 56 22" fill="none">
+                          <path d="M3 18C3 8 13 3 28 3C43 3 53 8 53 18" stroke="#60A5FA" stroke-width="1.2" stroke-dasharray="2 2"/>
+                          <rect x="12" y="8" width="32" height="12" rx="2" fill="#1E3A8A" stroke="#93C5FD" stroke-width="0.8"/>
+                          <line x1="20" y1="8" x2="20" y2="20" stroke="#93C5FD" stroke-width="0.6"/>
+                          <line x1="36" y1="8" x2="36" y2="20" stroke="#93C5FD" stroke-width="0.6"/>
+                        </svg>
+                      </div>
+                      <div class="ep-phone-card-body">
+                        <span class="ep-phone-sub">TICKETMASTER STADIUM</span>
+                        <span class="ep-phone-title" id="epPhoneEventTitle">Don Toliver</span>
+                        <div class="ep-phone-spec-row">
+                          <div><span>SEC</span><b id="epPhoneSec">151</b></div>
+                          <div><span>ROW</span><b id="epPhoneRow">15</b></div>
+                          <div><span>SEAT</span><b id="epPhoneSeat">11</b></div>
+                        </div>
+                        <div class="ep-phone-entry">
+                          <span>ENTRY INFO</span>
+                          <b>West Gate</b>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ep-phone-nfc-reader">
+                      <div class="ep-nfc-circle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#026CDF" stroke-width="2">
+                          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                          <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                        </svg>
+                      </div>
+                      <span>Hold Near Reader</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="ep-safetix-right">
+                <h3 class="ep-safetix-title">With Ticketmaster SafeTix™ Your Phone Is Your Ticket</h3>
+                <ul class="ep-safetix-list">
+                  <li>
+                    <span class="ep-check-circle">✓</span>
+                    <span>In the Ticketmaster app, sign in to your account.</span>
+                  </li>
+                  <li>
+                    <span class="ep-check-circle">✓</span>
+                    <span>Tap My Events to view your order.</span>
+                  </li>
+                  <li>
+                    <span class="ep-check-circle">✓</span>
+                    <span>Add your ticket to your phone's digital wallet, then just tap and go to get in at the gate.</span>
+                  </li>
+                </ul>
+                <div class="ep-safetix-buttons">
+                  <button class="ep-safetix-outline-btn">Download the App</button>
+                  <button class="ep-safetix-outline-btn">Learn More</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Mail Action Pills -->
+          <div class="ep-bottom-pills-row">
+            <button class="ep-pill-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 17 4 12 9 7"></polyline>
+                <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+              </svg>
+              <span>Reply</span>
+            </button>
+            <button class="ep-pill-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 17 20 12 15 7"></polyline>
+                <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
+              </svg>
+              <span>Forward</span>
+            </button>
+            <button class="ep-pill-btn ep-pill-emoji">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -493,10 +739,108 @@
       </div>
     </div>
 
+    <!-- ===== TEMPLATE SELECTION VIEW ===== -->
+    <div class="view" id="viewTemplateSelection">
+      <div class="template-selection">
+        <div class="ts-header">
+          <button class="ts-back-btn" id="btnSelectBack">
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+              <path d="M8.5 1.5L1.5 8L8.5 14.5" stroke="#1C6FEB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <h2 class="ts-title">SELECT TEMPLATE</h2>
+        </div>
+        <p class="ts-instruction">Which of your tickets do you want to view in Apple Wallet?</p>
+        <div class="ts-list" id="tsList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== APPLE WALLET PREVIEW VIEW ===== -->
+    <div class="view" id="viewWalletPreview">
+      <div class="wallet-preview">
+        <div class="wp-header-actions">
+          <button class="wp-close-btn" id="btnWalletClose">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="12" fill="#333"/>
+              <path d="M8 8L16 16M16 8L8 16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="wp-add-btn" id="btnWalletAdd">Add</button>
+        </div>
+        
+        <div class="wp-pass">
+          <div class="wp-notch"></div>
+          <div class="wp-pass-header">
+            <img src="/icon.png" class="wp-logo" alt="Logo">
+            <div class="wp-header-text">
+              <input type="text" id="wpTime" class="wp-input wp-input-right" value="7:30 PM">
+              <input type="text" id="wpDate" class="wp-input wp-input-right wp-input-small" value="TUE, June 09 2...">
+            </div>
+          </div>
+          
+          <div class="wp-strip" id="wpStripArea">
+            <input type="file" id="wpStripUpload" accept="image/*" style="display:none">
+            <div class="wp-strip-bg" id="wpStripBg"></div>
+            <div class="wp-strip-overlay">Click to change image</div>
+          </div>
+
+          <div class="wp-body">
+            <div class="wp-primary">
+              <input type="text" id="wpVenue" class="wp-input wp-input-small wp-input-gray" value="NATIONWIDE ARENA - COLUMBUS, OH">
+              <input type="text" id="wpEvent" class="wp-input wp-input-large" value="DON TOLIVER - OCTANE TOUR">
+            </div>
+
+            <div class="wp-secondary row-layout">
+              <div class="wp-col">
+                <span class="wp-label">SECTION</span>
+                <input type="text" id="wpSection" class="wp-input wp-input-medium" value="FLOOR">
+              </div>
+              <div class="wp-col text-right">
+                <span class="wp-label">ROW</span>
+                <input type="text" id="wpRow" class="wp-input wp-input-medium wp-input-right" value="GA">
+              </div>
+            </div>
+
+            <div class="wp-aux row-layout">
+              <div class="wp-col">
+                <span class="wp-label">TICKET TYPE</span>
+                <span class="wp-fixed-text">DO NOT SCREENSHOT/PRINT</span>
+              </div>
+              <div class="wp-col text-right">
+                <input type="text" id="wpTicketType" class="wp-input wp-input-small wp-input-right" value="LOWER LEVEL">
+                <span class="wp-fixed-text">ADD TO DIGITAL WALLET</span>
+              </div>
+            </div>
+
+            <div class="wp-barcode-area">
+              <div class="wp-qr-code">
+                <svg width="120" height="120" viewBox="0 0 120 120" style="background:#fff; border-radius:8px; padding:8px;">
+                  <!-- Mock QR code pattern -->
+                  <rect x="0" y="0" width="40" height="40" fill="#000" stroke="#fff" stroke-width="4"/>
+                  <rect x="10" y="10" width="20" height="20" fill="#000"/>
+                  <rect x="80" y="0" width="40" height="40" fill="#000" stroke="#fff" stroke-width="4"/>
+                  <rect x="90" y="10" width="20" height="20" fill="#000"/>
+                  <rect x="0" y="80" width="40" height="40" fill="#000" stroke="#fff" stroke-width="4"/>
+                  <rect x="10" y="90" width="20" height="20" fill="#000"/>
+                  <rect x="50" y="50" width="20" height="20" fill="#000"/>
+                  <rect x="70" y="70" width="20" height="20" fill="#000"/>
+                  <rect x="90" y="90" width="10" height="10" fill="#000"/>
+                  <rect x="50" y="90" width="10" height="10" fill="#000"/>
+                  <rect x="90" y="50" width="10" height="10" fill="#000"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<script src="/js/app.js"></script>
+<script src="/js/app.js?v=5"></script>
 
 </body>
 </html>

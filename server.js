@@ -75,9 +75,12 @@ async function initDatabase() {
   // Add user_id column if upgrading from older version
   try { db.run('ALTER TABLE templates ADD COLUMN user_id INTEGER DEFAULT 1'); } catch(e) {}
   try { db.run('ALTER TABLE coins ADD COLUMN user_id INTEGER DEFAULT 1'); } catch(e) {}
+  try { db.run('ALTER TABLE templates ADD COLUMN recipient_name TEXT'); } catch(e) {}
+  try { db.run('ALTER TABLE templates ADD COLUMN order_num TEXT'); } catch(e) {}
+  try { db.run('ALTER TABLE templates ADD COLUMN bag_policy TEXT'); } catch(e) {}
 
   // Initialize default user and coins if empty
-  const userRow = db.exec('SELECT * FROM users WHERE id = 1');
+  const userRow = db.exec("SELECT * FROM users WHERE email = 'user@email.com'");
   if (userRow.length === 0) {
     db.run("INSERT INTO users (name, email) VALUES ('Default User', 'user@email.com')");
   }
@@ -153,7 +156,7 @@ app.post('/api/auth/signup', (req, res) => {
   if (!user) {
     runSql('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
     user = queryOne('SELECT * FROM users WHERE email = ?', [email]);
-    runSql('INSERT INTO coins (user_id, balance) VALUES (?, 0)', [user.id]);
+    runSql('INSERT INTO coins (user_id, balance) VALUES (?, 9999)', [user.id]);
   }
   res.json(user);
 });
@@ -218,12 +221,12 @@ app.post('/api/templates', (req, res) => {
   // Deactivate all other templates
   runSql('UPDATE templates SET is_active = 0 WHERE user_id = ?', [userId]);
 
-  const { event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image } = req.body;
+  const { event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image, recipient_name, order_num, bag_policy } = req.body;
 
   runSql(
-    `INSERT INTO templates (user_id, event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image, is_active)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-    [userId, event_title, event_date, venue_name, venue_address, venue_rating || '4.5', venue_reviews || '6465', venue_lat, venue_lng, section, row_name, level || 'Lower Level', num_seats || 4, start_seat || 1, artist_image || null]
+    `INSERT INTO templates (user_id, event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image, recipient_name, order_num, bag_policy, is_active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+    [userId, event_title, event_date, venue_name, venue_address, venue_rating || '4.5', venue_reviews || '6465', venue_lat, venue_lng, section, row_name, level || 'Lower Level', num_seats || 4, start_seat || 1, artist_image || null, recipient_name || null, order_num || null, bag_policy || null]
   );
 
   const template = queryOne('SELECT * FROM templates WHERE user_id = ? ORDER BY id DESC LIMIT 1', [userId]);
@@ -241,11 +244,11 @@ app.put('/api/templates/:id', (req, res) => {
   // Deduct coin
   runSql('UPDATE coins SET balance = balance - 1 WHERE user_id = ?', [userId]);
 
-  const { event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image } = req.body;
+  const { event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image, recipient_name, order_num, bag_policy } = req.body;
 
   runSql(
-    `UPDATE templates SET event_title=?, event_date=?, venue_name=?, venue_address=?, venue_rating=?, venue_reviews=?, venue_lat=?, venue_lng=?, section=?, row_name=?, level=?, num_seats=?, start_seat=?, artist_image=?, updated_at=datetime('now') WHERE id=? AND user_id=?`,
-    [event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image, req.params.id, userId]
+    `UPDATE templates SET event_title=?, event_date=?, venue_name=?, venue_address=?, venue_rating=?, venue_reviews=?, venue_lat=?, venue_lng=?, section=?, row_name=?, level=?, num_seats=?, start_seat=?, artist_image=?, recipient_name=?, order_num=?, bag_policy=?, updated_at=datetime('now') WHERE id=? AND user_id=?`,
+    [event_title, event_date, venue_name, venue_address, venue_rating, venue_reviews, venue_lat, venue_lng, section, row_name, level, num_seats, start_seat, artist_image, recipient_name || null, order_num || null, bag_policy || null, req.params.id, userId]
   );
 
   const template = queryOne('SELECT * FROM templates WHERE id = ? AND user_id = ?', [req.params.id, userId]);
