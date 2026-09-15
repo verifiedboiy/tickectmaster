@@ -499,7 +499,54 @@ async function loadDashboard() {
       });
     });
   }
+
+  // Populate Email Proof Section Select & Preview
+  const proofSelect = $('#dashProofSelectTemplate');
+  if (proofSelect) {
+    proofSelect.innerHTML = templates.length === 0 
+      ? '<option value="">-- No templates created yet --</option>'
+      : '<option value="">-- Choose Template --</option>';
+      
+    templates.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = `${t.event_title} (${t.venue_name})`;
+      if (t.is_active) opt.selected = true;
+      proofSelect.appendChild(opt);
+    });
+
+    const activeTpl = templates.find(t => t.is_active) || templates[0];
+    if (activeTpl) {
+      $('#dashProofPreviewTitle').textContent = activeTpl.event_title;
+      $('#dashProofPreviewMeta').textContent = `${activeTpl.venue_name} · ${activeTpl.num_seats} Tickets · Order # ${activeTpl.order_num || '10-37619/CJQ'}`;
+    } else {
+      $('#dashProofPreviewTitle').textContent = 'Create a template first';
+      $('#dashProofPreviewMeta').textContent = 'Fill in event details to generate proof';
+    }
+
+    proofSelect.onchange = () => {
+      const selected = templates.find(t => t.id == proofSelect.value);
+      if (selected) {
+        $('#dashProofPreviewTitle').textContent = selected.event_title;
+        $('#dashProofPreviewMeta').textContent = `${selected.venue_name} · ${selected.num_seats} Tickets · Order # ${selected.order_num || '10-37619/CJQ'}`;
+      }
+    };
+  }
 }
+
+$('#btnDashGenerateProof').addEventListener('click', () => {
+  const selectVal = $('#dashProofSelectTemplate')?.value;
+  let targetTemplate = state.templates.find(t => t.id == selectVal);
+  if (!targetTemplate && state.templates.length > 0) {
+    targetTemplate = state.templates.find(t => t.is_active) || state.templates[0];
+  }
+  if (targetTemplate) {
+    renderEmailProof(targetTemplate);
+    showView('emailProof');
+  } else {
+    alert('Please create a template first to generate an email proof!');
+  }
+});
 
 $('#btnBuyCoins').addEventListener('click', () => {
   const telegramLink = 'https://t.me/verifiedboiy?text=I%20want%20to%20purchase%20a%20coin';

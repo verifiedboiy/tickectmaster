@@ -1268,13 +1268,126 @@ body {
   margin-top: 40px;
 }
 
-/* ========== DASHBOARD EMAIL PROOF BUTTON ========== */
+/* ========== DASHBOARD EMAIL PROOF BUTTON & CARD ========== */
 .dash-template-btn.proof {
   background: #026CDF;
   color: white;
   border: 1px solid #026CDF;
 }
 .dash-template-btn.proof:hover {
+  background: #0150a8;
+}
+
+.dash-proof-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.dash-proof-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-proof-card-preview {
+  background: #0F172A;
+  border: 1px solid #1E293B;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dash-proof-mini-banner {
+  background: radial-gradient(circle at 50% 30%, #1554B8 0%, #082E78 100%);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dash-proof-tm-mini {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  font-style: italic;
+  color: #FFFFFF;
+}
+
+.dash-proof-status-mini {
+  font-size: 10px;
+  font-weight: 600;
+  color: #93C5FD;
+}
+
+.dash-proof-mini-body {
+  padding: 8px 12px;
+}
+
+.dash-proof-mini-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 2px;
+}
+
+.dash-proof-mini-meta {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.dash-proof-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.dash-proof-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dash-proof-select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+}
+.dash-proof-select option {
+  background: #1E293B;
+  color: white;
+}
+
+.dash-proof-generate-btn {
+  background: #026CDF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.dash-proof-generate-btn:hover {
   background: #0150a8;
 }
 
