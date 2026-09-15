@@ -322,11 +322,21 @@ function renderMap(template) {
     attributionControl: false
   }).setView([lat, lng], 16);
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    subdomains: ['a', 'b', 'c']
   }).addTo(state.map);
 
-  L.marker([lat, lng]).addTo(state.map);
+  const tmPin = L.divIcon({
+    className: 'tm-map-marker',
+    html: `<div style="width:28px;height:28px;background:#026CDF;border:2.5px solid #FFFFFF;border-radius:50%;box-shadow:0 3px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="6" fill="white"/></svg>
+    </div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
+  });
+
+  L.marker([lat, lng], { icon: tmPin }).addTo(state.map);
 
   // Fix map rendering - multiple calls to ensure full fill
   setTimeout(() => state.map.invalidateSize(), 100);
